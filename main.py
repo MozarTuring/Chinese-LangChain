@@ -1,20 +1,25 @@
+import gradio as gr
 import os
 import shutil
-
+import logging.config
+logging.config.fileConfig("/home/maojingwei/project/common_tools_for_centos/logging_config.ini")
+common_logger = logging.getLogger()
+jwprint = common_logger.info
 from app_modules.overwrites import postprocess
 from app_modules.presets import *
 from clc.langchain_application import LangChainApplication
 
-
+jwprint("hello")
 # 修改成自己的配置！！！
 class LangChainCFG:
-    llm_model_name = 'THUDM/chatglm-6b-int4-qe'  # 本地模型文件 or huggingface远程仓库
-    embedding_model_name = 'GanymedeNil/text2vec-large-chinese'  # 检索模型文件 or huggingface远程仓库
+    llm_model_name = '/home/maojingwei/project/Chinese-LangChain/download/THUDM---chatglm-6b-int4-qe'  # 本地模型文件 or huggingface远程仓库
+    # embedding_model_name = '/home/maojingwei/project/Chinese-LangChain/download/GanymedeNil---text2vec-large-chinese'  # 检索模型文件 or huggingface远程仓库
+    embedding_model_name = "/home/maojingwei/project/rag/download/BAAI---bge-large-zh-v1.5"
     vector_store_path = './cache'
     docs_path = './docs'
     kg_vector_stores = {
-        '中文维基百科': './cache/zh_wikipedia',
-        '大规模金融研报': './cache/financial_research_reports',
+        # '中文维基百科': './cache/zh_wikipedia',
+        # '大规模金融研报': './cache/financial_research_reports',
         '初始化': './cache',
     }  # 可以替换成自己的知识库，如果没有需要设置为None
     # kg_vector_stores=None
@@ -44,7 +49,7 @@ def upload_file(file):
     # file_list首位插入新上传的文件
     file_list.insert(0, filename)
     application.source_service.add_document("docs/" + filename)
-    return gr.Dropdown.update(choices=file_list, value=filename)
+    # return gr.Dropdown.update(choices=file_list, value=filename)
 
 
 def set_knowledge(kg_name, history):
@@ -61,9 +66,8 @@ def clear_session():
     return '', None
 
 
+
 def predict(input,
-            large_language_model,
-            embedding_model,
             top_k,
             use_web,
             use_pattern,
@@ -107,7 +111,7 @@ def predict(input,
 with open("assets/custom.css", "r", encoding="utf-8") as f:
     customCSS = f.read()
 with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
-    gr.Markdown("""<h1><center>Chinese-LangChain</center></h1>
+    gr.Markdown("""<h1><center>电网问答助手</center></h1>
         <center><font size=3>
         </center></font>
         """)
@@ -115,22 +119,10 @@ with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
 
     with gr.Row():
         with gr.Column(scale=1):
-            embedding_model = gr.Dropdown([
-                "text2vec-base"
-            ],
-                label="Embedding model",
-                value="text2vec-base")
-
-            large_language_model = gr.Dropdown(
-                [
-                    "ChatGLM-6B-int4",
-                ],
-                label="large language model",
-                value="ChatGLM-6B-int4")
 
             top_k = gr.Slider(1,
                               20,
-                              value=4,
+                              value=1,
                               step=1,
                               label="检索top-k文档",
                               interactive=True)
@@ -162,17 +154,12 @@ with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
 
         with gr.Column(scale=4):
             with gr.Row():
-                chatbot = gr.Chatbot(label='Chinese-LangChain').style(height=400)
+                chatbot = gr.Chatbot(label='', height=400)#.style(height=400)
             with gr.Row():
                 message = gr.Textbox(label='请输入问题')
             with gr.Row():
                 clear_history = gr.Button("🧹 清除历史对话")
                 send = gr.Button("🚀 发送")
-            with gr.Row():
-                gr.Markdown("""提醒：<br>
-                                        [Chinese-LangChain](https://github.com/yanqiangmiffy/Chinese-LangChain) <br>
-                                        有任何使用问题[Github Issue区](https://github.com/yanqiangmiffy/Chinese-LangChain)进行反馈. <br>
-                                        """)
         with gr.Column(scale=2):
             search = gr.Textbox(label='搜索结果')
 
@@ -190,8 +177,6 @@ with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
         send.click(predict,
                    inputs=[
                        message,
-                       large_language_model,
-                       embedding_model,
                        top_k,
                        use_web,
                        use_pattern,
@@ -199,6 +184,7 @@ with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
                    ],
                    outputs=[message, chatbot, state, search])
 
+        send.click(predict, inputs=[message])
         # 清空历史对话按钮 提交
         clear_history.click(fn=clear_session,
                             inputs=[],
@@ -209,8 +195,6 @@ with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
         message.submit(predict,
                        inputs=[
                            message,
-                           large_language_model,
-                           embedding_model,
                            top_k,
                            use_web,
                            use_pattern,
@@ -218,12 +202,13 @@ with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
                        ],
                        outputs=[message, chatbot, state, search])
 
-demo.queue(concurrency_count=2).launch(
+demo.launch(
     server_name='0.0.0.0',
     server_port=8888,
-    share=False,
     show_error=True,
-    debug=True,
-    enable_queue=True,
-    inbrowser=True,
+    debug=False,
+    inbrowser=False,
 )
+
+
+# /home/maojingwei/project/common_tools_for_centos/run.sh /home/maojingwei/project/Chinese-LangChain/main.py

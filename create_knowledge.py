@@ -17,8 +17,8 @@ from langchain.embeddings.huggingface import HuggingFaceEmbeddings
 from langchain.vectorstores import FAISS
 from tqdm import tqdm
 # 中文Wikipedia数据导入示例：
-embedding_model_name = '/root/pretrained_models/text2vec-large-chinese'
-docs_path = '/root/GoMall/Knowledge-ChatGLM/cache/financial_research_reports'
+embedding_model_name = '/home/maojingwei/project/Chinese-LangChain/download/GanymedeNil---text2vec-large-chinese'
+docs_path = '/home/maojingwei/project/Chinese-LangChain/financial_research_reports'
 embeddings = HuggingFaceEmbeddings(model_name=embedding_model_name)
 
 

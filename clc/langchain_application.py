@@ -64,10 +64,12 @@ class LangChainApplication(object):
         self.llm_service.temperature = temperature
         self.llm_service.top_p = top_p
 
+        tmp_retriever = self.source_service.vector_store.as_retriever(
+                search_kwargs={"k": top_k})
+        # aa = tmp_retriever.invoke(query,)
         knowledge_chain = RetrievalQA.from_llm(
             llm=self.llm_service,
-            retriever=self.source_service.vector_store.as_retriever(
-                search_kwargs={"k": top_k}),
+            retriever=tmp_retriever,
             prompt=prompt)
         knowledge_chain.combine_documents_chain.document_prompt = PromptTemplate(
             input_variables=["page_content"], template="{page_content}")

@@ -12,10 +12,12 @@
 
 import os
 
-from duckduckgo_search import ddg
+# from duckduckgo_search import ddg
 from langchain.document_loaders import UnstructuredFileLoader
 from langchain.embeddings.huggingface import HuggingFaceEmbeddings
 from langchain.vectorstores import FAISS
+from langchain_community.document_loaders import PyPDFLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter # 文本分块器
 
 
 class SourceService(object):
@@ -42,16 +44,20 @@ class SourceService(object):
         self.vector_store.save_local(self.vector_store_path)
 
     def add_document(self, document_path):
-        loader = UnstructuredFileLoader(document_path, mode="elements")
+        # loader = UnstructuredFileLoader(document_path, mode="elements")
+        # doc = loader.load()
+        loader = PyPDFLoader(document_path)
         doc = loader.load()
-        self.vector_store.add_documents(doc)
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+        chunks = text_splitter.split_documents(doc)
+        self.vector_store.add_documents(chunks)
         self.vector_store.save_local(self.vector_store_path)
 
     def load_vector_store(self, path):
         if path is None:
             self.vector_store = FAISS.load_local(self.vector_store_path, self.embeddings)
         else:
-            self.vector_store = FAISS.load_local(path, self.embeddings)
+            self.vector_store = FAISS.load_local(path, self.embeddings, allow_dangerous_deserialization=True)
         return self.vector_store
 
     def search_web(self, query):
