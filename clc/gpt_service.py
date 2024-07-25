@@ -57,6 +57,7 @@ class ChatGLMService(LLM):
             trust_remote_code=True
         )
         self.model = AutoModel.from_pretrained(model_name_or_path, trust_remote_code=True).half().cuda()
+        # self.model = AutoModel.from_pretrained(model_name_or_path, trust_remote_code=True).cuda()
         self.model = self.model.eval()
 
     def auto_configure_device_map(self, num_gpus: int) -> Dict[str, int]:

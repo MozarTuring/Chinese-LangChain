@@ -16,10 +16,21 @@ from clc.config import LangChainCFG
 from clc.gpt_service import ChatGLMService
 from clc.source_service import SourceService
 
+from langchain_community.llms import VLLM
 
 class LangChainApplication(object):
     def __init__(self, config):
         self.config = config
+
+#         self.llm_service = VLLM(
+#     model="qwen/Qwen1.5-0.5B",
+#     trust_remote_code=True,  # mandatory for hf models
+#     max_new_tokens=128,
+#     top_k=10,
+#     top_p=0.95,
+#     temperature=0.8,
+# )
+
         self.llm_service = ChatGLMService()
         self.llm_service.load_model(model_name_or_path=self.config.llm_model_name)
         # self.llm_service.load_model_on_gpus(model_name_or_path=self.config.llm_model_name,num_gpus=self.config.n_gpus)

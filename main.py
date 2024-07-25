@@ -2,19 +2,20 @@ import gradio as gr
 import os
 import shutil
 import logging.config
-logging.config.fileConfig("/home/maojingwei/project/common_tools_for_centos/logging_config.ini")
-common_logger = logging.getLogger()
-jwprint = common_logger.info
+logging.config.fileConfig("/home/maojingwei/project/common_tools/logging_config.ini")
 from app_modules.overwrites import postprocess
 from app_modules.presets import *
 from clc.langchain_application import LangChainApplication
+import time
 
-jwprint("hello")
+
 # 修改成自己的配置！！！
 class LangChainCFG:
-    llm_model_name = '/home/maojingwei/project/Chinese-LangChain/download/THUDM---chatglm-6b-int4-qe'  # 本地模型文件 or huggingface远程仓库
+    llm_model_name = '/home/maojingwei/project/.resources/THUDM/chatglm-6b-int4-qe'
+    # llm_model_name = "/home/maojingwei/project/vllm/Qwen1___5-0___5B"
+    # 本地模型文件 or huggingface远程仓库
     # embedding_model_name = '/home/maojingwei/project/Chinese-LangChain/download/GanymedeNil---text2vec-large-chinese'  # 检索模型文件 or huggingface远程仓库
-    embedding_model_name = "/home/maojingwei/project/rag/download/BAAI---bge-large-zh-v1.5"
+    embedding_model_name = "/home/maojingwei/project/.resources/BAAI/bge-large-zh-v1.5"
     vector_store_path = './cache'
     docs_path = './docs'
     kg_vector_stores = {
@@ -29,6 +30,12 @@ class LangChainCFG:
 
 config = LangChainCFG()
 application = LangChainApplication(config)
+
+# tmp_start = time.time()
+# result = application.get_llm_answer(query=input, web_content="")
+# print(time.time()-tmp_start)
+# print(result)
+# exit()
 
 application.source_service.init_source_vector()
 
@@ -108,7 +115,7 @@ def predict(input,
         return '', history, history, search_text
 
 
-with open("assets/custom.css", "r", encoding="utf-8") as f:
+with open("/home/maojingwei/project/.resources/custom.css", "r", encoding="utf-8") as f:
     customCSS = f.read()
 with gr.Blocks(css=customCSS, theme=small_and_beautiful_theme) as demo:
     gr.Markdown("""<h1><center>电网问答助手</center></h1>
@@ -211,4 +218,8 @@ demo.launch(
 )
 
 
-# /home/maojingwei/project/common_tools_for_centos/run.sh /home/maojingwei/project/Chinese-LangChain/main.py
+
+"""
+$jwrun Chinese-LangChain/main.py
+"""
+
