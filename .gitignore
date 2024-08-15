@@ -1,5 +1,6 @@
 .idea
 cache
 docs/zh_wikipedia
-**/aaaMjw_TMP/**
-**/__pycache__/**
+aaaMjw_TMP/
+app_modules/__pycache__/
+clc/__pycache__/
